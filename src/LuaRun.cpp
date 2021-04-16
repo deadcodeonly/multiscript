@@ -53,55 +53,57 @@ extern "C"
     static int protected_main(lua_State *L);
     static lua_State *globalL;
     static const char *progname;
-    static int set_config_path_l(lua_State *L);
-    static int get_config_path_l(lua_State *L);
-    static int set_server_group_l(lua_State *L);
-    static int get_server_group_l(lua_State *L);
-    static int server_group_to_string_l(lua_State *L);
-    static int add_server_l(lua_State *L);
-    static int remove_server_l(lua_State *L);
-    static int add_group_l(lua_State *L);
-    static int remove_group_l(lua_State *L);
-    static int list_group_l(lua_State *L);
-    static int list_group_to_string_l(lua_State *L);
-    static int set_default_group_l(lua_State *L);
-    static int get_default_group_l(lua_State *L);
-    static int set_default_path_l(lua_State *L);
-    static int get_default_path_l(lua_State *L);
-    static int read_config_l(lua_State *L);
-    static int ssh_exec_l(lua_State *L);
-    static int ssh_exec_s_l(lua_State *L);
-    static int ssh_nohup_l(lua_State *L);
-    static int ssh_nohup_s_l(lua_State *L);
+    static int sshsetconfigpath_l(lua_State *L);
+    static int sshgetconfigpath_l(lua_State *L);
+    static int sshsetservergroup_l(lua_State *L);
+    static int sshgetservergroup_l(lua_State *L);
+    static int sshlsgroups_l(lua_State *L);
+    static int sshaddserver_l(lua_State *L);
+    static int sshrmserver_l(lua_State *L);
+    static int sshaddgroup_l(lua_State *L);
+    static int sshrmgroup_l(lua_State *L);
+    static int sshlsserver_l(lua_State *L);
+    static int sshlsservers_l(lua_State *L);
+    static int sshgroup_l(lua_State *L);
+    static int sshgetgroup_l(lua_State *L);
+    static int sshcd_l(lua_State *L);
+    static int sshpwd_l(lua_State *L);
+    static int sshreadconfig_l(lua_State *L);
+    static int sshexec_l(lua_State *L);
+    static int sshexecs_l(lua_State *L);
+    static int sshnohup_l(lua_State *L);
+    static int sshnohups_l(lua_State *L);
+    static int sshhelp_l(lua_State *L);
     static const struct luaL_Reg sshlib [] =
     {
-        {"setConfigPath", set_config_path_l},
-        {"getConfigPath", get_config_path_l},
-        {"setServerGroup", set_server_group_l},
-        {"getServerGroup", get_server_group_l},
-        {"serverGroupToString", server_group_to_string_l},
-        {"addServer", add_server_l},
-        {"removeServer", remove_server_l},
-        {"addGroup", add_group_l},
-        {"removeGroup", remove_group_l},
-        {"listGroup", list_group_l},
-        {"listGroupToString", list_group_to_string_l},
-        {"setDefaultGroup", set_default_group_l},
-        {"getDefaultGroup", get_default_group_l},
-        {"setDefaultPath", set_default_path_l},
-        {"getDefaultPath", get_default_path_l},
-        {"readConfig", read_config_l},
-        {"sshexec", ssh_exec_l},
-        {"sshexecs", ssh_exec_s_l},
-        {"sshnohup", ssh_nohup_l},
-        {"sshnohups", ssh_nohup_s_l},
+        {"sshsetconfigpath", sshsetconfigpath_l},
+        {"sshgetconfigpath", sshgetconfigpath_l},
+        {"sshsetservergroup", sshsetservergroup_l},
+        {"sshgetservergroup", sshgetservergroup_l},
+        {"sshlsgroups", sshlsgroups_l},
+        {"sshaddserver", sshaddserver_l},
+        {"sshrmserver", sshrmserver_l},
+        {"sshaddgroup", sshaddgroup_l},
+        {"sshrmgroup", sshrmgroup_l},
+        {"sshlsserver", sshlsserver_l},
+        {"sshlsservers", sshlsservers_l},
+        {"sshgroup", sshgroup_l},
+        {"sshgetgroup", sshgetgroup_l},
+        {"sshcd", sshcd_l},
+        {"sshpwd", sshpwd_l},
+        {"sshreadconfig", sshreadconfig_l},
+        {"sshexec", sshexec_l},
+        {"sshexecs", sshexecs_l},
+        {"sshnohup", sshnohup_l},
+        {"sshnohups", sshnohups_l},
+        {"sshhelp", sshhelp_l},
         {NULL, NULL}
     };
 }
 
 //========== Exported Functions ==========//
 
-static int set_config_path_l(lua_State *L)
+static int sshsetconfigpath_l(lua_State *L)
 {
     SSHContext &ctx = SSHContext::Factory();
     const char *path = luaL_checkstring(L, 1);
@@ -109,14 +111,14 @@ static int set_config_path_l(lua_State *L)
     return 0;
 }
 
-static int get_config_path_l(lua_State *L)
+static int sshgetconfigpath_l(lua_State *L)
 {
     SSHContext &ctx = SSHContext::Factory();
     lua_pushstring(L, ctx.getOtherConfigPath().c_str());
     return 1;
 }
 
-static int set_server_group_l(lua_State *L)
+static int sshsetservergroup_l(lua_State *L)
 {
     std::map<std::string, std::set<std::string> > newMap;
     lua_settop(L, 1);
@@ -145,7 +147,7 @@ static int set_server_group_l(lua_State *L)
     return 0;
 }
 
-static int get_server_group_l(lua_State *L)
+static int sshgetservergroup_l(lua_State *L)
 {
     lua_settop(L, 0);
     lua_newtable(L);
@@ -169,7 +171,7 @@ static int get_server_group_l(lua_State *L)
     return 1;
 }
 
-static int server_group_to_string_l(lua_State *L)
+static int sshlsgroups_l(lua_State *L)
 {
     lua_settop(L, 0);
     std::stringstream ss;
@@ -190,7 +192,7 @@ static int server_group_to_string_l(lua_State *L)
     return 1;
 }
 
-static int add_server_l(lua_State *L)
+static int sshaddserver_l(lua_State *L)
 {
     lua_settop(L, 2);
     const char *group = luaL_checkstring(L, 1);
@@ -201,7 +203,7 @@ static int add_server_l(lua_State *L)
     return 0;
 }
 
-static int remove_server_l(lua_State *L)
+static int sshrmserver_l(lua_State *L)
 {
     lua_settop(L, 2);
     const char *group = luaL_checkstring(L, 1);
@@ -212,7 +214,7 @@ static int remove_server_l(lua_State *L)
     return 0;
 }
 
-static int add_group_l(lua_State *L)
+static int sshaddgroup_l(lua_State *L)
 {
     lua_settop(L, 2);
     const char *group = luaL_checkstring(L, 1);
@@ -231,7 +233,7 @@ static int add_group_l(lua_State *L)
     return 0;
 }
 
-static int remove_group_l(lua_State *L)
+static int sshrmgroup_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *group = luaL_checkstring(L, 1);
@@ -241,7 +243,7 @@ static int remove_group_l(lua_State *L)
     return 0;
 }
 
-static int list_group_l(lua_State *L)
+static int sshlsserver_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *group = luaL_checkstring(L, 1);
@@ -259,7 +261,7 @@ static int list_group_l(lua_State *L)
     return 1;
 }
 
-static int list_group_to_string_l(lua_State *L)
+static int sshlsservers_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *group = luaL_checkstring(L, 1);
@@ -275,7 +277,7 @@ static int list_group_to_string_l(lua_State *L)
     return 1;
 }
 
-static int set_default_group_l(lua_State *L)
+static int sshgroup_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *group = luaL_checkstring(L, 1);
@@ -285,7 +287,7 @@ static int set_default_group_l(lua_State *L)
     return 0;
 }
 
-static int get_default_group_l(lua_State *L)
+static int sshgetgroup_l(lua_State *L)
 {
     lua_settop(L, 0);
     SSHContext &ctx = SSHContext::Factory();
@@ -294,7 +296,7 @@ static int get_default_group_l(lua_State *L)
     return 1;
 }
 
-static int set_default_path_l(lua_State *L)
+static int sshcd_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *path = luaL_checkstring(L, 1);
@@ -304,7 +306,7 @@ static int set_default_path_l(lua_State *L)
     return 0;
 }
 
-static int get_default_path_l(lua_State *L)
+static int sshpwd_l(lua_State *L)
 {
     lua_settop(L, 0);
     SSHContext &ctx = SSHContext::Factory();
@@ -313,7 +315,7 @@ static int get_default_path_l(lua_State *L)
     return 1;
 }
 
-static int read_config_l(lua_State *L)
+static int sshreadconfig_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *path = luaL_checkstring(L, 1);
@@ -331,7 +333,7 @@ static int read_config_l(lua_State *L)
     return 1;
 }
 
-static int ssh_exec_l(lua_State *L)
+static int sshexec_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *cmd = luaL_checkstring(L, 1);
@@ -384,7 +386,7 @@ static int ssh_exec_l(lua_State *L)
     return 2;
 }
 
-int ssh_exec_s_l(lua_State *L)
+int sshexecs_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *cmd = luaL_checkstring(L, 1);
@@ -432,7 +434,7 @@ int ssh_exec_s_l(lua_State *L)
     return 1;
 }
 
-static int ssh_nohup_l(lua_State *L)
+static int sshnohup_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *cmd = luaL_checkstring(L, 1);
@@ -476,7 +478,7 @@ static int ssh_nohup_l(lua_State *L)
     return 2;
 }
 
-static int ssh_nohup_s_l(lua_State *L)
+static int sshnohups_l(lua_State *L)
 {
     lua_settop(L, 1);
     const char *cmd = luaL_checkstring(L, 1);
@@ -519,6 +521,77 @@ static int ssh_nohup_s_l(lua_State *L)
         ss << e.what() << std::endl;
     }
     lua_pushstring(L, ss.str().c_str());
+    return 1;
+}
+
+static int sshhelp_l(lua_State *L)
+{
+    lua_settop(L, 0);
+    std::string s = ""
+        "nil sshsetconfigpath(string)      : Set new path to config file (multiscript.ini like) to load server groups.\n"
+        "string sshgetconfigpath()         : Get path to config file.\n"
+        "nil sshsetservergroup(luatable)   : Programatic form to 'multiscript.ini' ex.:\n"
+        "                                        sshsetservergroup({nodes={'server1','server2'},gpu={'server3'}})\n"
+        "luatable sshgetservergroup()      : Return a luatable with server groups.\n"
+        "string sshlsgroups()              : Formated string with server groups.\n"
+        "nil sshaddserver(string,string)   : Add server (string 2) to group (string 1).\n"
+        "nil sshrmserver(string,string)    : Removes a server (string 2) from a group (string 1).\n"
+        "nil sshaddgroup(string, luatable) : Add a new group ex.: sshaddgroup('nodes',{'server1','server2'}).\n"
+        "nil sshrmgroup(stirng)            : Removes a server group.\n"
+        "luatable sshlsserver()            : Return a luatable with all server groups.\n"
+        "string sshlsservers()             : Return a formated string with all server groups.\n"
+        "nil sshgroup(string)              : Set a server group to receive remote commands.\n"
+        "string sshgetgroup()              : Return atual group name.\n"
+        "nill sshcd(string)                : Set work directory to remote commands.\n"
+        "string sshpwd()                   : Return atual work directory to remote commands.\n"
+        "bool sshreadconfig(string)        : Load a config file (multiscript.ini like).\n"
+        "                                    If string is empty look in config path.\n"
+        "bool, luatable sshexec(string)    : Execute remote command in all servers of the atual group and return execution \n"
+        "                                    state and a output by servers:\n"
+        "                                        bool is true only if all execution is OK.\n"
+        "                                        luatable layout is:\n"
+        "                                            {\n"
+        "                                                 serverA={\n"
+        "                                                             status=int,\n"
+        "                                                             {\n"
+        "                                                                 stdout={line1,line2,...},\n"
+        "                                                                 stderr={line1,line2,...}\n"
+        "                                                             }\n"
+        "                                                 },\n"
+        "                                                 serverB={\n"
+        "                                                             status=int,\n"
+        "                                                             {\n"
+        "                                                                 stdout={line1,line2,...},\n"
+        "                                                                 stderr={line1,line2,...}\n"
+        "                                                             }\n"
+        "                                                 }\n"
+        "                                            }\n"
+        "                                            status is S.O. return state for executed command.\n"
+        "string sshexecs(string)           : Execute remote command in all servers of the atual group and return a \n"
+        "                                    formated string.\n"
+        "bool, luatable sshnohup(string)   : Execute remote command in all servers of the atual group but don't wait \n"
+        "                                    execution ending, returning only internal states:\n"
+        "                                        bool is true only if all commands is successfully sent.\n"
+        "                                        luatable layout is:\n"
+        "                                            {\n"
+        "                                                 serverA={\n"
+        "                                                             status=int,\n"
+        "                                                             {\n"
+        "                                                                 stderr={line1,line2,...}\n"
+        "                                                             }\n"
+        "                                                 },\n"
+        "                                                 serverB={\n"
+        "                                                             status=int,\n"
+        "                                                             {\n"
+        "                                                                 stderr={line1,line2,...}\n"
+        "                                                             }\n"
+        "                                                 }\n"
+        "                                            }\n"
+        "                                            status is send command state.\n"
+        "string sshnohups(string)          : Execute remote command in all servers of the atual group but don't wait\n"
+        "                                    execution ending, returning only a formated string with internal states.\n"
+        "string sshhelp()                  : this help.\n";
+    lua_pushstring(L, s.c_str());
     return 1;
 }
 
@@ -657,9 +730,10 @@ static void print_usage(const char *badoption)
 
 static void print_version(void)
 {
-    std::cout << "MultiScript 0.5 based on: ";
+    std::cout << "MultiScript 0.6 based on: ";
     lua_writestring(LUA_COPYRIGHT, strlen(LUA_COPYRIGHT));
     lua_writeline();
+    std::cout << std::endl << "    Type sshhelp() - To show ssh* functions !!!" << std::endl;
     lua_writeline();
 }
 

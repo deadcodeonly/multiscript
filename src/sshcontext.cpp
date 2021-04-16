@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 #include "mutexguard.h"
 #include "util.h"
@@ -269,7 +270,7 @@ bool SSHContext::readConfig(const std::string &_path)
     {
         return false;
     }
-    std::ifstream input(path);
+    std::ifstream input(path.c_str());
     if (! input.good())
     {
         return false;
@@ -378,6 +379,10 @@ ssh_session SSHContext::openSession(const std::string &_strServer)
     }
     ssh_options_set(sshSession, SSH_OPTIONS_HOST, server.c_str());
     ssh_options_set(sshSession, SSH_OPTIONS_PORT, &port);
+    long stimeout = 999999999;
+    ssh_options_set(sshSession, SSH_OPTIONS_TIMEOUT, &stimeout);
+    unsigned int rekey = 0;
+    ssh_options_set(sshSession, SSH_OPTIONS_REKEY_TIME, &rekey);
     if (! user.empty())
     {
         ssh_options_set(sshSession, SSH_OPTIONS_USER, user.c_str());
