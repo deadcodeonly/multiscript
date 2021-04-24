@@ -379,10 +379,8 @@ ssh_session SSHContext::openSession(const std::string &_strServer)
     }
     ssh_options_set(sshSession, SSH_OPTIONS_HOST, server.c_str());
     ssh_options_set(sshSession, SSH_OPTIONS_PORT, &port);
-    long stimeout = 999999999;
+    long stimeout = 1;
     ssh_options_set(sshSession, SSH_OPTIONS_TIMEOUT, &stimeout);
-    unsigned int rekey = 0;
-    ssh_options_set(sshSession, SSH_OPTIONS_REKEY_TIME, &rekey);
     if (! user.empty())
     {
         ssh_options_set(sshSession, SSH_OPTIONS_USER, user.c_str());
@@ -456,29 +454,63 @@ void SSHContext::runCommand(const std::string &_cmd, ssh_session &_session, ssh_
         _ret->status = 0;
         return;
     }
-    int status = ssh_channel_get_exit_status(_channel);
-    if (SSH_ERROR == status)
-    {
-        throw std::runtime_error("Error in ssh_channel_get_exit_status().");
-    }
     int nbytes;
-    while ((nbytes = ssh_channel_read(_channel, buffer, sizeof(buffer), 0)) > 0)
+    int status = -1;
+    int pass = 4 | 2 | 1;
+    std::string strerr = "";
+    while (pass != 0)
     {
-        std::string s = std::string(buffer, (size_t)nbytes);
-        ssok << s;
-    }
-    if (nbytes < 0)
-    {
-        throw std::runtime_error("Error in ssh_channel_read(0).");
-    }
-    while ((nbytes = ssh_channel_read(_channel, buffer, sizeof(buffer), 1)) > 0)
-    {
-        std::string s = std::string(buffer, (size_t)nbytes);
-        sser << s;
-    }
-    if (nbytes < 0)
-    {
-        throw std::runtime_error("Error in ssh_channel_read(1).");
+        if ((pass & 1) != 0)
+        {
+            while ((nbytes = ssh_channel_read_nonblocking(_channel, buffer, sizeof(buffer), 1)) > 0)
+            {
+                std::string s = std::string(buffer, (size_t)nbytes);
+                ssok << s;
+            }
+            if (SSH_ERROR == nbytes)
+            {
+                strerr = "Error in ssh_channel_read_nonblocking(1).";
+                break;
+            }
+            if ((nbytes == 0 && 0 != ssh_channel_is_closed(_channel)) || (nbytes == SSH_EOF))
+            {
+                pass = pass & 6;
+            }
+        }
+        if ((pass & 2) != 0)
+        {
+            while ((nbytes = ssh_channel_read_nonblocking(_channel, buffer, sizeof(buffer), 0)) > 0)
+            {
+                std::string s = std::string(buffer, (size_t)nbytes);
+                ssok << s;
+            }
+            if (SSH_ERROR == nbytes)
+            {
+                strerr = "Error in ssh_channel_read_nonblocking(0).";
+                break;
+            }
+            if ((nbytes == 0 && 0 != ssh_channel_is_closed(_channel)) || nbytes == SSH_EOF)
+            {
+                pass = pass & 5;
+            }
+        }
+        if ((pass & 4) != 0)
+        {
+            status = ssh_channel_get_exit_status(_channel);
+            if (SSH_ERROR == status && ssh_channel_is_closed(_channel))
+            {
+                strerr = "Error in ssh_channel_get_exit_status().";
+                break;
+            }
+            else if (SSH_ERROR != status)
+            {
+                pass = pass & 3;
+            }
+        }
+        if (ssh_channel_is_open(_channel))
+        {
+            ssh_send_ignore(_session, "Ack");
+        }
     }
     _ret->status = status;
     ssok.seekg(0);
@@ -487,9 +519,14 @@ void SSHContext::runCommand(const std::string &_cmd, ssh_session &_session, ssh_
     {
         _ret->stdout.push_back(l);
     }
+    sser.seekg(0);
     while(std::getline(sser, l))
     {
         _ret->stderr.push_back(l);
+    }
+    if (! strerr.empty())
+    {
+        throw std::runtime_error(strerr.c_str());
     }
 }
 
